@@ -34,11 +34,11 @@ WiFiClient &WifiLocalClient::get_client()
 
 void WifiLocalClient::reconnect()
 {
+    Serial.print("Reconnecting to ");
+    Serial.println(WIFI_SSID);
     WiFi.disconnect();
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    Serial.print("Reconnecting to ");
-    Serial.println(WIFI_SSID);
     WiFi.waitForConnectResult();
     if (!is_connected())
     {

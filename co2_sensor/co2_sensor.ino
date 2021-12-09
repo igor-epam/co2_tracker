@@ -29,7 +29,23 @@ Lcd1602 lcd(pinouts::LcdAddress);
 WifiLocalClient wifi;
 Mqtt mqtt(wifi.get_client(), pinouts::MqttClientName, pinouts::MqttWillTopic);
 
-int delayMillis = 5000;
+static int was = 0;
+
+namespace
+{
+  void just_test()
+  {
+    int delayMillis = 5000;
+    auto const elapsed = millis() - was;
+    static int counter;
+    if (elapsed > delayMillis)
+    {
+      lcd.print(String("alive ") + String(counter++), "");
+      Serial.println("alive");
+      was = millis();
+    }
+  }
+}
 
 void setup()
 {
@@ -43,6 +59,7 @@ void setup()
   wifi.setup();
   mqtt.setup();
 
+  ArduinoOTA.setHostname("co2_tracker");
   ArduinoOTA.begin();
 }
 
@@ -53,4 +70,5 @@ void loop()
   led.loop();
   lcd.loop();
   ArduinoOTA.handle();
+  just_test();
 }
