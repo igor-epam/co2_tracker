@@ -1,41 +1,56 @@
 
-auto constexpr redPin = D7;
-auto constexpr greenPin = D5;
-auto constexpr bluePin = D0;
+#include "Co2Led.h"
+#include "Lcd1602.h"
+#include "WifiLocalClient.h"
+#include "Mqtt.h"
 
+#include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+
+namespace pinouts
+{
+  auto constexpr RedPin = D7;
+  auto constexpr GreenPin = D5;
+  auto constexpr BluePin = D0;
+  // used, but not configured, just hardcoded
+  auto constexpr SdaPin = D2;
+  auto constexpr SlcPin = D1;
+
+  auto constexpr LcdAddress = 0x27;
+
+  // strings
+  auto constexpr MqttClientName = "co2_sensor";
+  auto constexpr MqttWillTopic = "co2_sensor/alive";
+}
+
+Co2Led led(pinouts::RedPin, pinouts::GreenPin, pinouts::BluePin);
+Lcd1602 lcd(pinouts::LcdAddress);
+WifiLocalClient wifi;
+Mqtt mqtt(wifi.get_client(), pinouts::MqttClientName, pinouts::MqttWillTopic);
 
 int delayMillis = 5000;
 
-void setColor(int red, int green, int blue)
+void setup()
 {
+  Serial.begin(9600);
 
-  analogWrite(redPin, red);
-  analogWrite(greenPin, green);
-  analogWrite(bluePin, blue);
+  led.setup();
+
+  lcd.setup();
+  led.SetGreen();
+
+  wifi.setup();
+  mqtt.setup();
+
+  ArduinoOTA.begin();
 }
 
-void setup() {
-  // set the digital pin as output:
-  pinMode(redPin, OUTPUT);
-  pinMode(greenPin, OUTPUT);
-  pinMode(bluePin, OUTPUT);
-}
-
-void loop() {
-
-  setColor(255, 0, 0);  // red
-  delay(delayMillis);
-  setColor(0, 255, 0);  // green
-  delay(delayMillis);
-  setColor(0, 0, 255);  // blue
-  delay(delayMillis);
-  setColor(255, 255, 0);  // yellow
-  delay(delayMillis);
-  setColor(0, 0, 0);  // black
-  delay(delayMillis);
-  setColor(80, 0, 80);  // purple
-  delay(delayMillis);
-  setColor(0, 255, 255);  // aqua
-  delay(delayMillis);
-
+void loop()
+{
+  wifi.loop();
+  mqtt.loop();
+  led.loop();
+  lcd.loop();
+  ArduinoOTA.handle();
 }
