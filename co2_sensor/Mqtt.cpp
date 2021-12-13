@@ -66,17 +66,13 @@ void Mqtt::reconnect_if_needed()
         return;
 
     Serial.println("mqtt reconnect");
-    auto started = millis();
+    auto const started = millis();
     client_.connect(client_name_.c_str(), MQTT_USER, MQTT_PASSWORD, born_topic_.c_str(), 2, true /*retain*/, "offline");
+    auto const start = millis();
     while (!client_.connected())
     {
-        delay(500); //wait for 500 ms
         Serial.println("trying to reconnect mqtt");
         auto const now = millis();
-        if (now < started)
-        {
-            started = now;
-        }
         if (now - started > 5 /*sec*/ * 1000 /*ms*/)
         {
             Serial.println("Tineout while reconnecting to mqtt");
@@ -100,4 +96,9 @@ void Mqtt::just_born()
         Serial.println("send born message");
         client_.publish(born_topic_.c_str(), reinterpret_cast<const std::uint8_t *>("online"), 6 /*size*/, true /*retain*/);
     }
+}
+
+bool Mqtt::is_connected()
+{
+    return client_.connected();
 }

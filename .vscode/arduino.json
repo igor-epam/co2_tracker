@@ -3,5 +3,5 @@
     "board": "esp8266:esp8266:d1_mini_clone",
     "sketch": "co2_sensor\\co2_sensor.ino",
     "output": "out",
-    "port": "COM5"
+    "port": "192.168.100.105"
 }

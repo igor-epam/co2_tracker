@@ -19,6 +19,7 @@ public:
   void setup();
   void publish(char const *topic, char const *state, bool retain);
   void subscribe(char const *topic, CallbackFunction function);
+  bool is_connected();
 
 private:
   struct TopicAndSubscriber

@@ -19,13 +19,9 @@ void Co2Led::SetRed()
 }
 void Co2Led::SetYellow()
 {
-    set_color(255, 255, 0);
+    set_color(255, 75, 0);
 }
 void Co2Led::SetGreen()
 {
     set_color(0, 255, 0);
-}
-void Co2Led::SetBrown()
-{
-    set_color(150, 75, 0);
 }
