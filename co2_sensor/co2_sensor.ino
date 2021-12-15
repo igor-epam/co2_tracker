@@ -4,6 +4,7 @@
 #include "WifiLocalClient.h"
 #include "Mqtt.h"
 #include "Co2Handler.h"
+#include "Co2Sensor.h"
 
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
@@ -18,12 +19,16 @@ namespace pinouts
   auto constexpr SdaPin = D2;
   auto constexpr SlcPin = D1;
 
+  auto constexpr RXPin = RX;
+  auto constexpr TXPin = TX;
+
   auto constexpr LcdAddress = 0x27;
 
   // strings
   auto constexpr MqttClientName = "co2_sensor";
   auto constexpr MqttWillTopic = "co2_sensor/alive";
   auto constexpr MqttStateTopic = "co2_sensor/state";
+
 }
 
 Co2Led led(pinouts::RedPin, pinouts::GreenPin, pinouts::BluePin);
@@ -31,42 +36,47 @@ Lcd1602 lcd(pinouts::LcdAddress);
 WifiLocalClient wifi;
 Mqtt mqtt(wifi.get_client(), pinouts::MqttClientName, pinouts::MqttWillTopic);
 Co2Handler co2(mqtt, pinouts::MqttStateTopic);
-
-static int was = 0;
+Co2Sensor co2_sensor(30 * 1000 /*ms*/, pinouts::RXPin, pinouts::TXPin);
 
 namespace
 {
-  void just_test()
+  void display(std::optional<int> co2_level_optional, bool wifi_ok, bool mqtt_ok)
   {
-    int delayMillis = 5000;
-    auto const elapsed = millis() - was;
-    static int counter;
-    if (elapsed > delayMillis)
+    if (!wifi_ok || !mqtt_ok)
     {
-      auto const co2_level = std::pow(counter % 10, 2) * 20;
-      co2.handle_value(co2_level);
-      lcd.print(String("counter: ") + String(counter++), "co2: " + String(co2_level));
-      Serial.println("alive");
-      if (co2_level < 600)
-      {
-        led.SetGreen();
-      }
-      else if (co2_level < 1000)
-      {
-        led.SetYellow();
-      }
-      else
-      {
-        led.SetRed();
-      }
-      was = millis();
+      lcd.print("wifi connected: " + String(wifi_ok), "mqtt connected: " + String(mqtt_ok));
+      return;
     }
+
+    if (!co2_level_optional)
+      return;
+
+    auto const co2_level = co2_level_optional.value();
+    co2.handle_value(co2_level);
+    Serial.println("alive");
+    String first_line = "co2: " + String(co2_level) + " PPM";
+    String second_line = "ok";
+    if (co2_level < 600)
+    {
+      led.SetGreen();
+    }
+    else if (co2_level < 1000)
+    {
+      led.SetYellow();
+      second_line = "open window";
+    }
+    else
+    {
+      led.SetRed();
+      second_line = "open window ASAP";
+    }
+    lcd.print(first_line, second_line);
   }
 }
 
 void setup()
 {
-  //Serial.begin(9600);
+  Serial.begin(9600);
 
   led.setup();
   led.SetGreen(); // by default
@@ -76,6 +86,8 @@ void setup()
 
   wifi.setup();
   mqtt.setup();
+
+  co2_sensor.setup();
 
   ArduinoOTA.setHostname("co2_tracker");
   ArduinoOTA.begin();
@@ -87,11 +99,13 @@ void loop()
   mqtt.loop();
   led.loop();
   lcd.loop();
+  co2_sensor.loop();
   ArduinoOTA.handle();
-  just_test();
-  // todo: make state display class
-  if (!wifi.is_connected() || !mqtt.is_connected())
+  co2_sensor.loop();
+  auto const co2_level = co2_sensor.getPPM();
+
+  if (co2_level)
   {
-    lcd.print("wifi connected: " + String(wifi.is_connected()), "mqtt connected: " + String(mqtt.is_connected()));
+    display(co2_level.value(), wifi.is_connected(), mqtt.is_connected());
   }
 }
