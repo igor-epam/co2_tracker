@@ -25,12 +25,18 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       
-      - name: Checkout custom library
+      - name: Checkout custom LCD
         uses: actions/checkout@v2
         with:
           repository: fdebrabander/Arduino-LiquidCrystal-I2C-library
           ref: master
           path: CustomLiquidCrystal # must contain string "Custom"
+      - name: Checkout custom MZH19
+        uses: actions/checkout@v2
+        with:
+          repository: crisap94/MHZ19
+          ref: master
+          path: CustomMZH19
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
