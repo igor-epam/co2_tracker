@@ -28,6 +28,7 @@ namespace pinouts
   auto constexpr MqttClientName = "co2_sensor";
   auto constexpr MqttWillTopic = "co2_sensor/alive";
   auto constexpr MqttStateTopic = "co2_sensor/state";
+  auto constexpr MqttCalibrateTopic = "co2_sensor/calibrate";
 
 }
 
@@ -42,12 +43,6 @@ namespace
 {
   void display(std::optional<int> co2_level_optional, bool wifi_ok, bool mqtt_ok)
   {
-    if (!wifi_ok || !mqtt_ok)
-    {
-      lcd.print("wifi connected: " + String(wifi_ok), "mqtt connected: " + String(mqtt_ok));
-      return;
-    }
-
     if (!co2_level_optional)
       return;
 
@@ -70,13 +65,18 @@ namespace
       led.SetRed();
       second_line = "open window ASAP";
     }
+    if (!wifi_ok || !mqtt_ok)
+    {
+      second_line = "w?:" + String(wifi_ok) + ",m?:" + String(mqtt_ok);
+    }
+
     lcd.print(first_line, second_line);
   }
 }
 
 void setup()
 {
-  Serial.begin(9600);
+  //Serial.begin(9600);
 
   led.setup();
   led.SetGreen(); // by default
@@ -84,10 +84,12 @@ void setup()
   lcd.setup();
   lcd.print(String("loading..."), "");
 
+  co2_sensor.setup();
+
   wifi.setup();
   mqtt.setup();
-
-  co2_sensor.setup();
+  mqtt.subscribe(pinouts::MqttCalibrateTopic, [&](byte *, unsigned int)
+                 { co2_sensor.calibrate(); });
 
   ArduinoOTA.setHostname("co2_tracker");
   ArduinoOTA.begin();

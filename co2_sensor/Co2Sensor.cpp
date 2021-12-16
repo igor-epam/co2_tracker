@@ -30,3 +30,8 @@ std::optional<int> Co2Sensor::getPPM()
     }
     return {};
 }
+
+void Co2Sensor::calibrate()
+{
+    calibrateZero();
+}

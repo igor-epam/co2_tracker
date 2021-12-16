@@ -17,6 +17,8 @@ public:
 
     std::optional<int> getPPM();
 
+    void calibrate();
+
 private:
     unsigned long millis_;
     std::uint64_t const update_delay_;
