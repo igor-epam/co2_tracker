@@ -13,15 +13,15 @@ void Co2Led::loop()
     Led::loop();
 }
 
-void Co2Led::SetRed()
+void Co2Led::set_red()
 {
     set_color(255, 0, 0);
 }
-void Co2Led::SetYellow()
+void Co2Led::set_yellow()
 {
     set_color(255, 75, 0);
 }
-void Co2Led::SetGreen()
+void Co2Led::set_green()
 {
     set_color(0, 255, 0);
 }

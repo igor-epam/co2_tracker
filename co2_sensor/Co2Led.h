@@ -14,7 +14,8 @@ public:
     void setup();
     void loop();
 
-    void SetRed();
-    void SetYellow();
-    void SetGreen();
+    using Led::enable;
+    void set_red();
+    void set_yellow();
+    void set_green();
 };

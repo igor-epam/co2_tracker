@@ -3,8 +3,6 @@
 #include <LiquidCrystal_I2C.h>
 #include <array>
 
-
-
 class Lcd1602 : private LiquidCrystal_I2C
 {
 public:
@@ -16,6 +14,7 @@ public:
     void setup();
     void loop();
     void print(String l1, String l2);
+    void set_backlight(bool enable);
 
 private:
     auto static constexpr Lcd1602Length = 16;

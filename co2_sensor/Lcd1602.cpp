@@ -37,3 +37,8 @@ void Lcd1602::printLine(String line, std::uint8_t index)
     //Serial.println("<-- to lcd, original line size: " + String(line.length()) + ", buffer size : " + String(buffer_.size()));
     Print::write(buffer_.data(), buffer_.size());
 }
+
+void Lcd1602::set_backlight(bool enable)
+{
+    setBacklight(enable);
+}
