@@ -10,6 +10,8 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
+#include <string>
+
 namespace pinouts
 {
   auto constexpr RedPin = D7;
@@ -29,6 +31,7 @@ namespace pinouts
   auto constexpr MqttWillTopic = "co2_sensor/alive";
   auto constexpr MqttStateTopic = "co2_sensor/state";
   auto constexpr MqttCalibrateTopic = "co2_sensor/calibrate";
+  auto constexpr MqttNightModeTopic = "co2_sensor/night_mode";
 
 }
 
@@ -53,16 +56,16 @@ namespace
     String second_line = "ok";
     if (co2_level < 600)
     {
-      led.SetGreen();
+      led.set_green();
     }
     else if (co2_level < 1000)
     {
-      led.SetYellow();
+      led.set_yellow();
       second_line = "open window";
     }
     else
     {
-      led.SetRed();
+      led.set_red();
       second_line = "open window ASAP";
     }
     if (!wifi_ok || !mqtt_ok)
@@ -72,6 +75,13 @@ namespace
 
     lcd.print(first_line, second_line);
   }
+
+  void set_night_mode(bool is_night)
+  {
+    auto const enable = !is_night;
+    led.enable(enable);
+    lcd.set_backlight(enable);
+  }
 }
 
 void setup()
@@ -79,7 +89,7 @@ void setup()
   //Serial.begin(9600);
 
   led.setup();
-  led.SetGreen(); // by default
+  led.set_green(); // by default
 
   lcd.setup();
   lcd.print(String("loading..."), "");
@@ -90,6 +100,12 @@ void setup()
   mqtt.setup();
   mqtt.subscribe(pinouts::MqttCalibrateTopic, [&](byte *, unsigned int)
                  { co2_sensor.calibrate(); });
+
+  mqtt.subscribe(pinouts::MqttNightModeTopic, [&](byte *payload, unsigned int length)
+                 {
+                   auto const is_night = "on" == std::string(reinterpret_cast<char const *>(payload), length);
+                   set_night_mode(is_night);
+                 });
 
   ArduinoOTA.setHostname("co2_tracker");
   ArduinoOTA.begin();
