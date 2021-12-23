@@ -26,7 +26,11 @@ std::optional<int> Co2Sensor::getPPM()
     {
         Serial.println("getPPM");
         millis_ = now;
-        return getMeasurement().co2_ppm;
+        auto const ppm = getMeasurement().co2_ppm;
+        if (-1 != ppm)
+        {
+            return ppm;
+        }
     }
     return {};
 }
