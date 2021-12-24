@@ -15,8 +15,11 @@ void Co2Handler::loop()
 {
 }
 
-void Co2Handler::handle_value(double co2_level)
+void Co2Handler::handle_value(std::optional<int> co2_level)
 {
-    auto const co2_as_string = String(co2_level);
-    mqtt_.publish(state_topic_.c_str(), co2_as_string.c_str(), true /*retain*/);
+    if (co2_level)
+    {
+        auto const co2_as_string = String(co2_level.value());
+        mqtt_.publish(state_topic_.c_str(), co2_as_string.c_str(), true /*retain*/);
+    }
 }

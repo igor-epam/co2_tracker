@@ -71,13 +71,13 @@ void Mqtt::reconnect_if_needed()
     auto const start = millis();
     while (!client_.connected())
     {
-        Serial.println("trying to reconnect mqtt");
         auto const now = millis();
         if (now - started > 5 /*sec*/ * 1000 /*ms*/)
         {
             Serial.println("Tineout while reconnecting to mqtt");
             return;
         }
+        yield();
     }
     just_born();
 }
