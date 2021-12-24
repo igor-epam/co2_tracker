@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include <optional>
+
 class Mqtt;
 
 class Co2Handler final
@@ -14,7 +16,7 @@ public:
 
     void setup();
     void loop();
-    void handle_value(double co2_level);
+    void handle_value(std::optional<int> co2_level);
 
 private:
     Mqtt &mqtt_;
