@@ -88,15 +88,15 @@ namespace
         co2_level_ = value_to_use;
       };
       manage_co2_level();
-      if ((wifi_ok != wifi_ok_) || (mqtt_ok != mqtt_ok_))
+      if (!wifi_ok || !mqtt_ok || wifi_ok != wifi_ok_ || mqtt_ok != mqtt_ok_)
       {
         auto const bool_to_string = [](auto bool_value) -> String
         {
           return bool_value ? "ok" : "x";
         };
-        second_line = "w: " + bool_to_string(wifi_ok) + ", m: " + bool_to_string(mqtt_ok);
         wifi_ok_ = wifi_ok;
         mqtt_ok_ = mqtt_ok;
+        second_line = "w: " + bool_to_string(wifi_ok) + ", m: " + bool_to_string(mqtt_ok);
       }
       lcd_.print(first_line, second_line);
     }
